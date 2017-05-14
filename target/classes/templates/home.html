@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{{^userName}}
+<form action="/login" method="post">
+    <input type="text" placeholder="Enter your name" name="loginName"/>
+    <button type="submit">Login</button>
+</form>
+<br>
+{{/userName}}
+<form action="/logout" method="post">
+    <button type="submit">Logout</button>
+</form>
+
+
+Hi!
+{{userName}}
+<form action="/add-to-cart" method="post">
+    <select name="name">
+        <option selected disabled>Name of Item</option>
+        <option value="Chips">Chips</option>
+        <option value="Fruit">Fruit</option>
+        <option value="Soda">Soda</option>
+        <option value="Meat">Meat</option>
+    </select>
+    <select name="quantity">
+        <option selected disabled>Select Quantity</option>
+        <option value="25">1</option>
+        <option value="30">2</option>
+        <option value="72">3</option>
+        <option value="250">4</option>
+    </select>
+    <select name="cost">
+        <option selected disabled>Select Price</option>
+        <option value="5">$ 5</option>
+        <option value="10">$ 10</option>
+        <option value="15">$ 15</option>
+        <option value="20">$ 20</option>
+    </select>
+    <button type="submit">Submit</button>
+</form>
+
+{{#characters}}
+{{name}}
+{{age}}
+{{/characters}}
+</body>
+</html>
