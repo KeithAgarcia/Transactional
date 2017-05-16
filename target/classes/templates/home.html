@@ -10,15 +10,15 @@
     <input type="text" placeholder="Enter your name" name="loginName"/>
     <button type="submit">Login</button>
 </form>
-<br>
 {{/userName}}
-<form action="/logout" method="post">
-    <button type="submit">Logout</button>
-</form>
+</body>
 
 
-Hi!
+<body>
 {{userName}}
+<br>
+
+Please add item that you would like to order:
 <form action="/add-to-cart" method="post">
     <select name="name">
         <option selected disabled>Name of Item</option>
@@ -43,10 +43,16 @@ Hi!
     </select>
     <button type="submit">Submit</button>
 </form>
-
-{{#characters}}
-{{name}}
-{{age}}
-{{/characters}}
+<br>
+<br>
+You've just ordered:
+{{#items}}
+{{quantity}} {{name}} for ${{cost}}
+{{/items}}
+<br>
+<br>
+<form action="/logout" method="post">
+    <button type="submit">Logout</button>
+</form>
 </body>
 </html>
