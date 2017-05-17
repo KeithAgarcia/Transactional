@@ -15,7 +15,7 @@ public class Main {
     public static void createTables(Connection conn) throws SQLException{
         Statement stmt = conn.createStatement();
         stmt.execute("CREATE TABLE IF NOT EXISTS items (id IDENTITY, order_id VARCHAR, name VARCHAR, cost INT, quantity INT)");
-        stmt.execute("CREATE TABLE IF NOT EXISTS orders(id IDENTITY, user_id INT)");
+        stmt.execute("CREATE TABLE IF NOT EXISTS orders(id IDENTITY, user_id INT, dateTime DATE)");
         stmt.execute("CREATE TABLE IF NOT EXISTS customers (id IDENTITY, userName VARCHAR)");
 
     }
@@ -45,6 +45,13 @@ public class Main {
          stmt.execute();
     }
 
+    public static void checkoutOrder(Connection conn, int user_id, Date dateTime ) throws SQLException{
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO orders VALUES(NULL, ?, ?)");
+        stmt.setInt(1, user_id);
+        stmt.setDate(2, dateTime);
+        stmt.execute();
+    }
+
 
 
     public static ArrayList<Item> selectItem (Connection conn, String name) throws SQLException {
@@ -63,6 +70,16 @@ public class Main {
         return items;
     }
 
+    public static ArrayList<Order> selectOrder (Connection conn, int user_id, Date dateTime) throws SQLException{
+        ArrayList<Order> orders = new ArrayList<>();
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM oders WHERE item_id = (select id from customers where userName =?)");
+        stmt.setInt(1, user_id);
+        stmt.setObject(2, dateTime);
+        Order order = new Order(user_id, dateTime);
+        orders.add(order);
+
+        return orders;
+    }
     public static void main(String[] args) throws SQLException {
         Server.createWebServer().start();
         Connection conn = DriverManager.getConnection("jdbc:h2:./main");
@@ -74,17 +91,16 @@ public class Main {
                 ((request, response) -> {
                     Session session = request.session();
                     String userName = session.attribute("userName");
-                    String name = session.attribute("name");
-
-
-//                    String name = session.attribute("name");
-//                    int quantity = Integer.valueOf(session.attribute("quantity"));
-//                    int cost = Integer.valueOf(session.attribute("cost"));
 
                     HashMap m = new HashMap();
                     ArrayList<Item> items =selectItem(conn, userName);
+//                    ArrayList<Order> orders = selectOrder(conn, );
+
+
                     m.put("userName", userName);
                     m.put("items", items);
+//                    m.put("")
+
 
                     return new ModelAndView(m, "home.html");
                 }),
@@ -127,7 +143,6 @@ public class Main {
         );
 
         Spark.post(
-
                 "/add-to-cart",
                 ((request, response) -> {
                     Session session = request.session();
@@ -144,17 +159,30 @@ public class Main {
                     Customer customer = selectUser(conn, userName);
                     insertItem(conn, customer.getId(), name, cost, quantity);
 
-                    session.attribute("cost", cost);
-                    session.attribute("name", name);
-                    session.attribute("quantity", quantity);
-
 
                     response.redirect("/");
                     return "";
                 })
         );
+
+        Spark.post(
+                "/checkout",
+                ((request, response) ->{
+                    Session session = request.session();
+                    String userName = session.attribute("userName");
+
+                    if(userName == null) {
+                        throw new Exception(("Not logged in."));
+                    }
+
+
+                    Date dateTime = session.attribute("dateTime");
+                    Customer customer = selectUser(conn, userName);
+                    checkoutOrder(conn, customer.getId(), dateTime);
+
+                    response.redirect("/");
+                    return"";
+                })
+        );
     }
-
-
-
 }

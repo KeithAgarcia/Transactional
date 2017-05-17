@@ -29,10 +29,10 @@ Please add item that you would like to order:
     </select>
     <select name="quantity">
         <option selected disabled>Select Quantity</option>
-        <option value="25">1</option>
-        <option value="30">2</option>
-        <option value="72">3</option>
-        <option value="250">4</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
     </select>
     <select name="cost">
         <option selected disabled>Select Price</option>
@@ -46,13 +46,24 @@ Please add item that you would like to order:
 <br>
 <br>
 You've just ordered:
+<br>
 {{#items}}
-{{quantity}} {{name}} for ${{cost}}
+<br>
+Name: {{name}}
+<br>
+Quantity: {{quantity}}
+<br>
+Cost: ${{cost}}
+<br>
 {{/items}}
 <br>
 <br>
 <form action="/logout" method="post">
     <button type="submit">Logout</button>
+</form>
+<form action="/checkout" method="post">
+    <input type="hidden" name="dateTime" value="DATE">
+    <button type="submit">checkout</button>
 </form>
 </body>
 </html>
