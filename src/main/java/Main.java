@@ -5,6 +5,8 @@ import spark.Spark;
 import spark.template.mustache.MustacheTemplateEngine;
 
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,7 +16,7 @@ import java.util.HashMap;
 public class Main {
     public static void createTables(Connection conn) throws SQLException{
         Statement stmt = conn.createStatement();
-        stmt.execute("CREATE TABLE IF NOT EXISTS items (id IDENTITY, order_id VARCHAR, name VARCHAR, cost INT, quantity INT)");
+        stmt.execute("CREATE TABLE IF NOT EXISTS items (id IDENTITY, order_id INT, name VARCHAR, cost INT, quantity INT)");
         stmt.execute("CREATE TABLE IF NOT EXISTS orders(id IDENTITY, user_id INT, dateTime DATE)");
         stmt.execute("CREATE TABLE IF NOT EXISTS customers (id IDENTITY, userName VARCHAR)");
 
@@ -45,7 +47,7 @@ public class Main {
          stmt.execute();
     }
 
-    public static void checkoutOrder(Connection conn, int user_id, Date dateTime ) throws SQLException{
+    public static void checkoutOrder(Connection conn, int user_id, Date dateTime) throws SQLException{
         PreparedStatement stmt = conn.prepareStatement("INSERT INTO orders VALUES(NULL, ?, ?)");
         stmt.setInt(1, user_id);
         stmt.setDate(2, dateTime);
@@ -54,14 +56,14 @@ public class Main {
 
 
 
-    public static ArrayList<Item> selectItem (Connection conn, String name) throws SQLException {
+    public static ArrayList<Item> selectItem (Connection conn, int id) throws SQLException {
         ArrayList<Item> items = new ArrayList<>();
         PreparedStatement stmt = conn.prepareStatement("SELECT * FROM items WHERE order_id = (select id from customers where userName = ?)");
-        stmt.setString(1, name);
+        stmt.setInt(1, id);
         ResultSet results = stmt.executeQuery();
 
         while (results.next()) {
-            int id = results.getInt("items.id");
+            String name = results.getString("items.name");
             int cost = results.getInt("items.cost");
             int quantity =results.getInt("items.quantity");
             Item item = new Item(id, name, cost, quantity);
@@ -92,8 +94,9 @@ public class Main {
                     Session session = request.session();
                     String userName = session.attribute("userName");
 
+
                     HashMap m = new HashMap();
-                    ArrayList<Item> items =selectItem(conn, userName);
+
 //                    ArrayList<Order> orders = selectOrder(conn, );
 
 
@@ -175,10 +178,9 @@ public class Main {
                         throw new Exception(("Not logged in."));
                     }
 
-
-                    Date dateTime = session.attribute("dateTime");
+                    Date time = new Date(Instant.now().toEpochMilli());
                     Customer customer = selectUser(conn, userName);
-                    checkoutOrder(conn, customer.getId(), dateTime);
+                    checkoutOrder(conn, customer.getId(), time);
 
                     response.redirect("/");
                     return"";

@@ -1,11 +1,14 @@
 /**
  * Created by Keith on 4/30/17.
  */
+
 public class Item {
     int id;
     String name;
     int cost;
     int quantity;
+
+    Order order;
 
     public Item(int id, String name, int cost, int quantity) {
         this.id = id;
