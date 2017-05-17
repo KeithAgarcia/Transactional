@@ -6,7 +6,6 @@ import spark.template.mustache.MustacheTemplateEngine;
 
 import java.sql.*;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -101,7 +100,6 @@ public class Main {
 
 
                     m.put("userName", userName);
-                    m.put("items", items);
 //                    m.put("")
 
 
