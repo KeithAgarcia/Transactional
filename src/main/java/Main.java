@@ -46,40 +46,61 @@ public class Main {
          stmt.execute();
     }
 
-    public static void checkoutOrder(Connection conn, int user_id, Date dateTime) throws SQLException{
-        PreparedStatement stmt = conn.prepareStatement("INSERT INTO orders VALUES(NULL, ?, ?)");
+    public static void insertOrder(Connection conn, int user_id) throws SQLException{
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO orders VALUES(NULL, ?, NULL)");
         stmt.setInt(1, user_id);
-        stmt.setDate(2, dateTime);
+        stmt.execute();
+    }
+
+    private static void checkoutOrder(Connection conn, Order order) throws SQLException {
+        // update the orders table
+        // where the order id is order.id:
+        // set the date to right now's date.
+        PreparedStatement stmt = conn.prepareStatement("update orders set dateTime = ? where id = ?");
+
+        // replacing the first question mark with the date object for right now
+        stmt.setDate(1, new Date(Instant.now().toEpochMilli()));
+
+        // id for the order we're looking to update.
+        stmt.setInt(2, order.getId());
+
         stmt.execute();
     }
 
 
-
-    public static ArrayList<Item> selectItem (Connection conn, int id) throws SQLException {
+    public static ArrayList<Item> selectItems(Connection conn, String userName) throws SQLException {
         ArrayList<Item> items = new ArrayList<>();
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM items WHERE order_id = (select id from customers where userName = ?)");
-        stmt.setInt(1, id);
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM items WHERE order_id = (select id from customers where userName = ?) and dateTime is null");
+        stmt.setString(1, userName);
         ResultSet results = stmt.executeQuery();
 
         while (results.next()) {
-            String name = results.getString("items.name");
-            int cost = results.getInt("items.cost");
-            int quantity =results.getInt("items.quantity");
+            String name = results.getString("name");
+            int cost = results.getInt("cost");
+            int quantity =results.getInt("quantity");
+            int id = results.getInt("id");
             Item item = new Item(id, name, cost, quantity);
             items.add(item);
         }
         return items;
     }
 
-    public static ArrayList<Order> selectOrder (Connection conn, int user_id, Date dateTime) throws SQLException{
-        ArrayList<Order> orders = new ArrayList<>();
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM oders WHERE item_id = (select id from customers where userName =?)");
+    public static Order selectOrder (Connection conn, int user_id) throws SQLException{
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM orders WHERE user_id = ? AND dateTime is null");
         stmt.setInt(1, user_id);
-        stmt.setObject(2, dateTime);
-        Order order = new Order(user_id, dateTime);
-        orders.add(order);
 
-        return orders;
+        ResultSet results = stmt.executeQuery();
+
+        // this represents the order we're going to return.
+        Order order = null;
+
+        // if the results has data, e.g. there is a current order
+        if (results.next()) {
+            // build new order object based off what we get in our resultset.
+            order = new Order(results.getInt("id"), results.getDate("dateTime"));
+        }
+
+        return order;
     }
     public static void main(String[] args) throws SQLException {
         Server.createWebServer().start();
@@ -158,8 +179,18 @@ public class Main {
                     int quantity = Integer.valueOf(request.queryParams("quantity"));
 
                     Customer customer = selectUser(conn, userName);
-                    insertItem(conn, customer.getId(), name, cost, quantity);
 
+                    // if there is no current order, we need to insert one.
+                    if (selectOrder(conn, customer.getId()) == null) {
+                        insertOrder(conn, customer.getId());
+                    }
+
+                    // we know at this point that the order must exist.
+                    // so we get the reference to the current order...
+                    Order currentOrder = selectOrder(conn, customer.getId());
+
+                    // and then we can use that order's id here.
+                    insertItem(conn, currentOrder.getId(), name, cost, quantity);
 
                     response.redirect("/");
                     return "";
@@ -178,7 +209,10 @@ public class Main {
 
                     Date time = new Date(Instant.now().toEpochMilli());
                     Customer customer = selectUser(conn, userName);
-                    checkoutOrder(conn, customer.getId(), time);
+                    Order currentOrder = selectOrder(conn, customer.getId());
+
+                    // we need a method that sets the datetime field to RIGHT NOW
+                    checkoutOrder(conn, currentOrder);
 
                     response.redirect("/");
                     return"";
@@ -186,3 +220,6 @@ public class Main {
         );
     }
 }
+// int total =0;
+//for every item;
+//sum + = item.cost * item.quantity
