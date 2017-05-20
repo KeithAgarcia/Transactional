@@ -70,7 +70,7 @@ public class Main {
 
     public static ArrayList<Item> selectItems(Connection conn, String userName) throws SQLException {
         ArrayList<Item> items = new ArrayList<>();
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM items WHERE order_id = (select id from customers where userName = ?) and dateTime is null");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM items JOIN orders join customers where datetime is null AND username = ?");
         stmt.setString(1, userName);
         ResultSet results = stmt.executeQuery();
 
@@ -117,9 +117,8 @@ public class Main {
 
                     HashMap m = new HashMap();
 
-//                    ArrayList<Order> orders = selectOrder(conn, );
-
-
+                    ArrayList<Item> items = selectItems(conn,userName );
+                    m.put("items", items);
                     m.put("userName", userName);
 //                    m.put("")
 
