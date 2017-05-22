@@ -113,14 +113,20 @@ public class Main {
                 ((request, response) -> {
                     Session session = request.session();
                     String userName = session.attribute("userName");
+                    int totalCost = 0;
 
 
                     HashMap m = new HashMap();
 
 //                    Order order = selectOrder(conn, id);
                     ArrayList<Item> items = selectItems(conn,userName );
+                    for(Item item: items){
+                        totalCost += item.cost * item.quantity;
+                    }
+
                     m.put("items", items);
                     m.put("userName", userName);
+                    m.put("totalCost", totalCost);
 //                    m.put("")
 
 
@@ -177,6 +183,7 @@ public class Main {
                     String name = request.queryParams("name");
                     int cost = Integer.valueOf(request.queryParams("cost"));
                     int quantity = Integer.valueOf(request.queryParams("quantity"));
+
 
                     Customer customer = selectUser(conn, userName);
 
