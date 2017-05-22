@@ -1282,3 +1282,12 @@ DELETE TABLE CUSTOMERS [42102-192]
 2017-05-20 14:26:57 jdbc[4]: exception
 org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "DROP CUSTOMERS[*]"; expected "TABLE, INDEX, USER, SEQUENCE, CONSTANT, TRIGGER, VIEW, ROLE, ALIAS, SCHEMA, ALL, DOMAIN, TYPE, DATATYPE, AGGREGATE"; SQL statement:
 DROP CUSTOMERS [42001-192]
+2017-05-22 15:44:25 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT * FROM ITEMS JOIN ORDERS JOIN CUSTOMERS WHERE DATETIME IS NULL AND USERNAME = ?FF[*] "; SQL statement:
+SELECT * FROM items JOIN orders join customers where datetime is null AND username = ?ff [42000-192]
+2017-05-22 16:04:20 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLException: Table "USERS" not found; SQL statement:
+select * from orders inner join items on orders.id = items.order_id inner join users on users.id = orders.user_id [42102-192]
+2017-05-22 16:04:28 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT * FROM ORDERS INNER JOIN ITEMS ON ORDERS.ID = ITEMS.ORDER_ID, INNER[*] JOIN USERS ON USERS.ID = ORDERS.USER_ID "; expected "identifier"; SQL statement:
+select * from orders inner join items on orders.id = items.order_id, inner join users on users.id = orders.user_id [42001-192]
